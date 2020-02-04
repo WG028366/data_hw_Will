@@ -1,0 +1,116 @@
+Sub stockwatch()
+
+    Dim ticker As String
+    Dim YearlyOpen As Double
+    Dim yearlyclose As Double
+    Dim LastRow As Long
+   
+   Dim ws As Worksheet
+   Dim starting_ws As Worksheet
+   
+    
+    
+    
+    Dim vol As Double
+    vol = 0
+    
+    Dim row As Integer
+    
+    'loop through each worksheet
+    
+    Set starting_ws = ActiveSheet
+    
+    For Each ws In ThisWorkbook.Worksheets
+        ws.Activate
+    
+    'Headers for summary table
+    
+    Cells(1, 9).Value = "Ticker"
+    Cells(1, 10).Value = "Yearly Change"
+    Cells(1, 11).Value = "Yearly Percentage"
+    Cells(1, 12).Value = "Total Stock Volume"
+    
+    'summary table values start at row 2
+    
+    row = 2
+    LastRow = ActiveSheet.Cells(Rows.Count, "A").End(xlUp).row
+    'store original open price for percent change calculation later
+    
+    PerChangeDivisor = 0
+    
+    
+    'for loop raw data
+    
+            For i = 2 To LastRow
+        
+                ticker = Cells(i, 1).Value
+                YearlyOpen = Cells(i, 3).Value
+                yearlyclose = Cells(i, 6).Value
+        
+                'find row with yearly open price
+                
+                If Cells((i - 1), 1).Value <> ticker Then
+    
+                    Cells(row, 10).Value = YearlyOpen * -1
+                    Cells(row, 9).Value = ticker
+                    
+                    PerChangeDivisor = PerChangeDivisor + Cells(row, 10).Value
+                    
+                    vol = vol + Cells(i, 7).Value
+            
+                'find row with yearly close price
+                
+                ElseIf Cells((i + 1), 1).Value <> ticker Then
+                
+                    Cells(row, 10).Value = Cells(row, 10).Value + yearlyclose
+                    
+                    
+                    'format yearly change column in table data summary
+                    
+                    If Cells(row, 10).Value < 0 Then
+                        Cells(row, 10).Interior.ColorIndex = 3
+                        
+                    Else
+                        Cells(row, 10).Interior.ColorIndex = 4
+                    End If
+                    
+                    'Find yearly change percentage
+                    If PerChangeDivisor = 0 Then
+                    Cells(row, 11).Value = 0
+                    
+                    Else
+                    Cells(row, 11).Value = Cells(row, 10).Value / PerChangeDivisor * -1
+                    Cells(row, 11).NumberFormat = "0.00%"
+                    
+                    'since this row will be last before new ticker,print volume in table, reset variables, add row
+                    
+                    vol = vol + Cells(i, 7).Value
+                    Cells(row, 12).Value = vol
+                    vol = 0
+                    PerChangeDivisor = 0
+                    row = row + 1
+                    
+                    End If
+                    
+                    
+               'add volume for rows between opening and closing row
+                    
+                Else
+                    vol = vol + Cells(i, 7).Value
+                    
+                    
+                    
+                
+                End If
+                
+                
+                
+            Next i
+        
+          Next ws
+          
+       
+        
+
+End Sub
+
